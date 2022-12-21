@@ -1,7 +1,6 @@
 {
   "name": "firstday-backend",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -12,11 +11,25 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "express-list-endpoints": "^6.0.0",
+    "express-validator": "^6.14.2",
+    "express-validators": "^1.0.4",
+    "http-errors": "^2.0.0",
+    "path": "^0.12.7",
     "uniqid": "^5.4.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Francescostefan1998/firstDay-backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Francescostefan1998/firstDay-backend/issues"
+  },
+  "homepage": "https://github.com/Francescostefan1998/firstDay-backend#readme",
+  "description": ""
 }

@@ -8,7 +8,6 @@ const albumsRouter = express.Router();
 console.log(import.meta.url);
 console.log(fileURLToPath(import.meta.url));
 console.log(dirname(fileURLToPath(import.meta.url)));
-console.log(join(dirname(fileURLToPath(import.meta.url))), "albums.json");
 const albumsJSONPath = join(
   dirname(fileURLToPath(import.meta.url)),
   "albums.json"
