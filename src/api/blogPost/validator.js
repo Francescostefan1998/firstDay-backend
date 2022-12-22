@@ -1,6 +1,11 @@
 import { checkSchema, validationResult } from "express-validator";
 import createHttpError from "http-errors";
+
+const { BadRequest, NotFound } = createHttpError;
+
 /*
+
+const
 {	
 "_id": "SERVER GENERATED ID",
 "category": "ARTICLE CATEGORY",
@@ -66,9 +71,7 @@ export const triggerBadRequest = (req, res, next) => {
 
   if (!errors.isEmpty()) {
     next(
-      createHttpError(400, "Errors during blog validation", {
-        errorsList: errors.array(),
-      })
+      BadRequest("Errors during validation", { errorsList: errors.array() })
     );
   } else {
     next();

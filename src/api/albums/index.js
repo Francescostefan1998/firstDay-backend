@@ -3,6 +3,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import uniqid from "uniqid";
+import { getAlbums } from "../../lib/fs-tools.js";
 const albumsRouter = express.Router();
 
 console.log(import.meta.url);
@@ -35,9 +36,9 @@ albumsRouter.get("/", (req, resp) => {
   resp.send(albumsArray);
 });
 
-albumsRouter.get("/:albumId", (req, resp) => {
+albumsRouter.get("/:albumId", async (req, resp) => {
   const albumID = req.params.albumId;
-  const albumsArray = JSON.parse(fs.readFileSync(albumsJSONPath));
+  const albumsArray = await getAlbums();
   const findAlbum = albumsArray.find((album) => album.ID === albumID);
 
   resp.send(findAlbum);
