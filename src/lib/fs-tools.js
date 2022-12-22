@@ -20,7 +20,8 @@ export const writeAlbums = (albumsArray) =>
   writeJSON(albumsJSONPath, albumsArray);
 
 export const getBlogPost = () => readJSON(blogPostJSONPath);
-export const writeBlogPost = (blogPostArray) => writeJSON(blogPostJSONPath);
+export const writeBlogPost = (blogPostArray) =>
+  writeJSON(blogPostJSONPath, blogPostArray);
 
 export const saveArtistAvatars = (fileName, contentAsABuffer) =>
   writeFile(join(publicFolderPath, fileName), contentAsABuffer);

@@ -1,1 +1,1 @@
-[{"name":"Francesco","surname":"Stefan","ID":"firstid","email":"k@gmail.com","date of birth":"21/09/2018","avatar":"https://ui-avatars.com/api/?name=John+Doe","artist":{"avatar":"http://localhost:3002/img/albums/11.zip"},"updatedAt":"2022-12-22T14:56:11.689Z", "avatar": "ddd"}]
+[{"name":"mar","surname":"Stefan","ID":"firstid","email":"k@gmail.com","date of birth":"21/09/2018","avatar":"ddd","artist":{"avatar":"http://localhost:3002/img/albums/11.zip"},"updatedAt":"2022-12-22T17:48:55.676Z"}]

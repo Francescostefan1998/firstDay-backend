@@ -1,69 +1,100 @@
 import express from "express";
-import fs from "fs";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import uniqid from "uniqid";
-import { getAlbums } from "../../lib/fs-tools.js";
+import httpErrors from "http-errors";
+import { checksAlbumsSchema, triggerBadRequest } from "./validator.js";
+import {
+  getAlbums,
+  writeAlbums,
+  getBlogPost,
+  writeBlogPost,
+} from "../../lib/fs-tools.js";
+const { NotFound, Unauthorized, BadRequest } = httpErrors;
 const albumsRouter = express.Router();
 
-console.log(import.meta.url);
-console.log(fileURLToPath(import.meta.url));
-console.log(dirname(fileURLToPath(import.meta.url)));
-const albumsJSONPath = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "albums.json"
+albumsRouter.post(
+  "/",
+  checksAlbumsSchema,
+  triggerBadRequest,
+  async (req, resp, next) => {
+    try {
+      const newAlbum = { ...req.body, createdAt: new Date(), ID: uniqid() };
+      const albumsArray = await getAlbums();
+      albumsArray.push(newAlbum);
+      await writeAlbums(albumsArray);
+      resp.status(201).send({ ID: newAlbum.ID });
+    } catch (error) {
+      next(error);
+    }
+  }
 );
-console.log(albumsJSONPath);
 
-albumsRouter.post("/", (req, resp) => {
-  console.log(req.body);
-  const newAlbum = { ...req.body, createdAt: new Date(), ID: uniqid() };
-  console.log(newAlbum);
-
-  const albumsArray = JSON.parse(fs.readFileSync(albumsJSONPath));
-  albumsArray.push(newAlbum);
-
-  fs.writeFileSync(albumsJSONPath, JSON.stringify(albumsArray));
-  resp.send({ message: "hello post" });
-  console.log("hello");
+albumsRouter.get("/", async (req, resp, next) => {
+  try {
+    const albumsArray = await getAlbums();
+    if (req.query && req.query.category) {
+      const filterBlogPost = albumsArray.filter(
+        (blog) => blog.category === req.query.category
+      );
+      resp.send(filterBlogPost);
+    } else {
+      resp.send(albumsArray);
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
-albumsRouter.get("/", (req, resp) => {
-  const fileContent = fs.readFileSync(albumsJSONPath);
-  console.log(fileContent);
-  const albumsArray = JSON.parse(fileContent);
-  console.log(albumsArray);
-  resp.send(albumsArray);
+albumsRouter.get("/:albumId", async (req, resp, next) => {
+  try {
+    const albumsArray = await getAlbums();
+    const findAlbum = albumsArray.find(
+      (album) => album.ID === req.params.albumId
+    );
+    if (findAlbum) {
+      resp.send(findAlbum);
+    } else {
+      next(NotFound(`Album wit id : ${req.params.albumId} not found`));
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
-albumsRouter.get("/:albumId", async (req, resp) => {
-  const albumID = req.params.albumId;
-  const albumsArray = await getAlbums();
-  const findAlbum = albumsArray.find((album) => album.ID === albumID);
-
-  resp.send(findAlbum);
+albumsRouter.put("/:albumId", async (req, resp, next) => {
+  try {
+    const albumsArray = await getAlbums();
+    const index = albumsArray.findIndex(
+      (album) => album.ID === req.params.albumId
+    );
+    if (index !== -1) {
+      const oldAlbum = albumsArray[index];
+      const updateAlbum = { ...oldAlbum, ...req.body, updatedAt: new Date() };
+      albumsArray[index] = updateAlbum;
+      writeAlbums(albumsArray);
+      resp.send(updateAlbum);
+    } else {
+      next(NotFound(`Album with id : ${req.params.albumId} not found`));
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
-albumsRouter.put("/:albumId", (req, resp) => {
-  const albumsArray = JSON.parse(fs.readFileSync(albumsJSONPath));
-  const index = albumsArray.findIndex(
-    (album) => album.ID === req.params.albumId
-  );
-  const oldAlbum = albumsArray[index];
-  const updateAlbum = { ...oldAlbum, ...req.body, updatedAt: new Date() };
-  albumsArray[index] = updateAlbum;
-  fs.writeFileSync(albumsJSONPath, JSON.stringify(albumsArray));
-  resp.send(updateAlbum);
-});
-
-albumsRouter.delete("/:albumId", (req, resp) => {
-  const albumsArray = JSON.parse(fs.readFileSync(albumsJSONPath));
-  const remainingAlbums = albumsArray.filter(
-    (album) => album.ID !== req.params.albumId
-  );
-
-  fs.writeFileSync(albumsJSONPath, JSON.stringify(remainingAlbums));
-  resp.send({ message: "hello delete id" });
+albumsRouter.delete("/:albumId", async (req, resp, next) => {
+  try {
+    const albumsArray = await getAlbums();
+    const remainingAlbums = albumsArray.filter(
+      (album) => album.ID !== req.params.albumId
+    );
+    if (albumsArray.length !== remainingAlbums.length) {
+      writeAlbums(remainingAlbums);
+      resp.status(204).send({ message: "hello delete id" });
+    } else {
+      next(NotFound(`Album with id ${req.params.albumId} not found`));
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default albumsRouter;

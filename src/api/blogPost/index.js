@@ -2,7 +2,12 @@ import express from "express";
 import uniqid from "uniqid";
 import httpErrors from "http-errors";
 import { checksBlogsSchema, triggerBadRequest } from "./validator.js";
-import { getAlbums, writeAlbums, getBlogPost } from "../../lib/fs-tools.js";
+import {
+  getAlbums,
+  writeAlbums,
+  getBlogPost,
+  writeBlogPost,
+} from "../../lib/fs-tools.js";
 const { NotFound, Unauthorized, BadRequest } = httpErrors;
 
 const blogPostRouter = express.Router();
@@ -13,11 +18,11 @@ blogPostRouter.post(
   triggerBadRequest,
   async (req, resp, next) => {
     try {
-      const newBlogPost = { ...req.body, createdAte: new Date(), id: uniqid() };
-      const blogPostArray = getBlogPost();
+      const newBlogPost = { ...req.body, createdAt: new Date(), id: uniqid() };
+      const blogPostArray = await getBlogPost();
       blogPostArray.push(newBlogPost);
       await writeBlogPost(blogPostArray);
-      res.status(201).send({ id: newBlogPost.id });
+      resp.status(201).send({ id: newBlogPost.id });
     } catch (error) {
       next(error);
     }
@@ -61,7 +66,7 @@ blogPostRouter.put("/:blogPostId", async (req, resp, next) => {
       const updateBlog = { ...oldBlog, ...req.body, updatedAt: new Date() };
       blogs[index] = updateBlog;
       writeBlogPost(blogs);
-      res.send(updateBlog);
+      resp.send(updateBlog);
     } else {
       next(NotFound(`Blog with id ${req.params.blogPostId} not found`));
     }
@@ -73,7 +78,7 @@ blogPostRouter.delete("/:blogPostId", async (req, res, next) => {
   try {
     const blogs = await getBlogPost();
     const remainingBlogPost = blogs.filter(
-      (blog) => blog.id !== blog.params.blogPostId
+      (blog) => blog.id !== req.params.blogPostId
     );
     if (blogs.length !== remainingBlogPost.length) {
       writeBlogPost(remainingBlogPost);
